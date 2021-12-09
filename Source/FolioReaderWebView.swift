@@ -62,6 +62,7 @@ open class FolioReaderWebView: UIWebView {
                 || action == #selector(updateHighlightNote(_:))
                 || (action == #selector(define(_:)) && isOneWord)
                 || (action == #selector(play(_:)) && (book.hasAudio || readerConfig.enableTTS))
+                || action == #selector(translater(_:))
                 || (action == #selector(share(_:)) && readerConfig.allowSharing)
                 || (action == #selector(copy(_:)) && readerConfig.allowSharing) {
                 return true
@@ -209,15 +210,23 @@ open class FolioReaderWebView: UIWebView {
         let vc = UIReferenceLibraryViewController(term: selectedText)
         vc.view.tintColor = self.readerConfig.tintColor
         guard let readerContainer = readerContainer else { return }
+        NotificationCenter.default.post(name: NSNotification.Name("getSystemDic"), object: selectedText)
         readerContainer.show(vc, sender: nil)
     }
 
     @objc func play(_ sender: UIMenuController?) {
         self.folioReader.readerAudioPlayer?.play()
-
         self.clearTextSelection()
     }
-
+    
+    @objc func translater(_ sender: UIMenuController?) {
+        guard let selectedText = js("getSelectedText()") else {
+            return
+        }
+        self.clearTextSelection()
+        NotificationCenter.default.post(name: NSNotification.Name("showTranslaterAction"), object: selectedText)
+    }
+    
     func setYellow(_ sender: UIMenuController?) {
         changeHighlightStyle(sender, style: .yellow)
     }
@@ -273,6 +282,7 @@ open class FolioReaderWebView: UIWebView {
         let highlightNoteItem = UIMenuItem(title: self.readerConfig.localizedHighlightNote, action: #selector(highlightWithNote(_:)))
         let editNoteItem = UIMenuItem(title: self.readerConfig.localizedHighlightNote, action: #selector(updateHighlightNote(_:)))
         let playAudioItem = UIMenuItem(title: self.readerConfig.localizedPlayMenu, action: #selector(play(_:)))
+        let translaterItem = UIMenuItem(title: "翻译", action: #selector(translater(_:)))
         let defineItem = UIMenuItem(title: self.readerConfig.localizedDefineMenu, action: #selector(define(_:)))
         let colorsItem = UIMenuItem(title: "C", image: colors) { [weak self] _ in
             self?.colors(menuController)
@@ -325,7 +335,7 @@ open class FolioReaderWebView: UIWebView {
                 menuItems.append(shareItem)
             }
         }
-        
+        menuItems.append(translaterItem)
         menuController.menuItems = menuItems
     }
     

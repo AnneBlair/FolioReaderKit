@@ -280,6 +280,8 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
 
         if self.book.hasAudio || self.readerConfig.enableTTS {
             rightBarIcons.append(UIBarButtonItem(image: audioIcon, style: .plain, target: self, action:#selector(presentPlayerMenu(_:))))
+        } else {
+            rightBarIcons.append(UIBarButtonItem(image: audioIcon, style: .plain, target: self, action:#selector(customPresentPlayerMenu(_:))))
         }
 
         let font = UIBarButtonItem(image: fontIcon, style: .plain, target: self, action: #selector(presentFontsMenu))
@@ -1386,7 +1388,11 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         menu.transitioningDelegate = animator
         present(menu, animated: true, completion: nil)
     }
-
+    
+    /// custom player
+    @objc func customPresentPlayerMenu(_ sender: UIBarButtonItem) {
+        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "CustomPresentPlayerMenu"), object: true)
+    }
     /**
      Present Quote Share
      */
